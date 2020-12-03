@@ -7,5 +7,6 @@
 
   <ItemGroup>
     <Folder Include="Solvers\" />
+    <Folder Include="Toboggan\" />
   </ItemGroup>
 </Project>
