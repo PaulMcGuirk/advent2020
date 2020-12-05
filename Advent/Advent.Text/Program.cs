@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Collections.Generic;
 using Advent.Text.Solvers;
+using System.IO;
 
 namespace Advent
 {
@@ -15,24 +16,83 @@ namespace Advent
                 return;
             }
 
-            var problemId = args[0];
-            var solver = GetSolver(problemId);
+            var filepath = args.Length >= 2 ? args[1] : null;
 
-            if (args.Length >= 2)
+            if (args[0] == "check")
             {
-                solver.InputFilepath = args[1];
+                if (string.IsNullOrEmpty(filepath))
+                {
+                    Console.WriteLine("No check file given");
+                }
+                DoCheck(filepath);
+                return;
             }
 
+            var problemId = args[0];
+            
             Console.WriteLine($"Advent of Code 2020 Problem {problemId}");
-
-            var result = solver.Solve();
-
+            var result = GetSolution(problemId, filepath);
+            
             if (result == null)
             {
                 Console.WriteLine("No solution found");
             }
 
             Console.WriteLine($"{result}");
+        }
+
+        /// <summary>
+        /// Get the solution for a single problem
+        /// </summary>
+        /// <param name="problemId">The problem ID</param>
+        /// <param name="filepath">The path to the input file</param>
+        /// <returns>The solution</returns>
+        private static object GetSolution(string problemId, string filepath)
+        {
+            var solver = GetSolver(problemId);
+            if (!string.IsNullOrEmpty(filepath))
+            {
+                solver.InputFilepath = filepath;
+            }
+            return solver.Solve();
+        }
+
+        /// <summary>
+        /// Run the checks for a series of solved problems
+        /// </summary>
+        /// <param name="filepath">The filepath containing the check file</param>
+        private static void DoCheck(string filepath)
+        {
+            var rawData = File.ReadAllText(filepath);
+            var failedProblems = new List<string>();
+            foreach (var line in rawData.Trim().Split('\n'))
+            {
+                var lineData = line.Split(' ');
+                var problemId = lineData[0];
+                var expected = lineData[1];
+                var inputFilepath = lineData.Length >= 3 ? lineData[2] : null;
+                if (!string.IsNullOrEmpty(inputFilepath))
+                {
+                    // this is pretty lousy
+                    var lastSlashPos = filepath.LastIndexOf('/');
+                    inputFilepath = filepath[..(lastSlashPos + 1)] + inputFilepath;
+                }
+                var actual = GetSolution(problemId, inputFilepath);
+                var isMatch = actual.ToString() == expected;
+                Console.WriteLine($"Problem: {problemId} Match: {isMatch} Expected: {expected} Actual: {actual}");
+                if (!isMatch)
+                {
+                    failedProblems.Add(problemId);
+                }
+            }
+            if (failedProblems.Count > 0)
+            {
+                Console.WriteLine($"Failed problems: {string.Join(", ", failedProblems)}");
+            }
+            else
+            {
+                Console.WriteLine("All problems passed");
+            }
         }
 
         /// <summary>

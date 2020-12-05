@@ -1,0 +1,10 @@
+1.1 319531 input01.txt
+1.2 244300320 input01.txt
+2.1 460 input02.txt
+2.2 251 input02.txt
+3.1 237 input03.txt
+3.2 2106818610 input03.txt
+4.1 202 input04.txt
+4.2 137 input04.txt
+5.1 816 input05.txt
+5.2 539 input05.txt
