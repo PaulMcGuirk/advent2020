@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Advent.Text.Passports;
+using Advent.Text.TravelDocuments;
 
 namespace Advent.Text.Solvers
 {

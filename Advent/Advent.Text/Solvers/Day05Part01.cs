@@ -3,15 +3,17 @@ using Advent.Text.TravelDocuments;
 
 namespace Advent.Text.Solvers
 {
-    [Solver("4.2")]
-    public class Day04Part02 : Solver
+    [Solver("5.1")]
+    public class Day05Part01 : Solver
     {
         public override object Solve()
         {
             var contents = ReadInputFile();
-            var passports = Passport.ParseBatchString(contents);
 
-            return passports.Where(passport => passport.IsValid()).Count();
+            return contents.Trim()
+                .Split('\n')
+                .Select(code => new BoardingPass(code).Id)
+                .Max();
         }
     }
 }
