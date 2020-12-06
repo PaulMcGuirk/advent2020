@@ -37,9 +37,9 @@ namespace Advent.Text.Solvers
 
             while (enumerator.MoveNext())
             {
-                var next = enumerator.Current;
-                result.IntersectWith(next);
+                result.IntersectWith(enumerator.Current);
             }
+
             return result;
         }
     }
