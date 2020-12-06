@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Advent.Text.TravelDocuments;
 
 namespace Advent.Text.Solvers
 {
@@ -13,7 +12,7 @@ namespace Advent.Text.Solvers
 
             var result = contents.Trim()
                 .Split("\n\n")
-                .Select(group => new HashSet<char>(group.Replace("\n", "")).Count())
+                .Select(group => group.Replace("\n", "").Distinct().Count())
                 .Sum();
 
             return result;
