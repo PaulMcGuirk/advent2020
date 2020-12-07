@@ -8,6 +8,6 @@
   <ItemGroup>
     <Folder Include="Solvers\" />
     <Folder Include="Toboggan\" />
-    <Folder Include="Passports\" />
+    <Folder Include="Luggage\" />
   </ItemGroup>
 </Project>

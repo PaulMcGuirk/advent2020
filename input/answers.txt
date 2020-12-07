@@ -10,3 +10,5 @@
 5.2 539 input05.txt
 6.1 6551 input06.txt
 6.2 3358 input06.txt
+7.1 259 input07.txt
+7.2 45018 input07.txt
