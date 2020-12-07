@@ -34,8 +34,7 @@ namespace Advent.Text.Luggage
         }
 
         private static readonly Regex _ruleRegex = new Regex(@"^(?<bagColor>[a-z ]+) bags contain (?<children>[a-z0-9, ]+).$");
-        private static readonly Regex _childRegex = new Regex(@"^(?<amount>\d+) (?<color>[a-z ]+) bag(s|)$");
-        private const string NO_CHILDREN_STRING = "no other bags";
+        private static readonly Regex _childRegex = new Regex(@"(?<amount>\d+) (?<color>[a-z ]+) bag(s|)");
         /// <summary>
         /// Parse a rule string.
         /// </summary>
@@ -51,14 +50,9 @@ namespace Advent.Text.Luggage
             var rule = new LuggageRule(bagColor);
 
             var children = match.Groups["children"].Value;
-            if (children == NO_CHILDREN_STRING)
-            {
-                return rule;
-            }
 
-            foreach (var child in children.Split(','))
+            foreach (Match childMatch in _childRegex.Matches(children))
             {
-                var childMatch = _childRegex.Match(child.Trim());
                 var amount = int.Parse(childMatch.Groups["amount"].Value);
                 var childColor = childMatch.Groups["color"].Value;
 
