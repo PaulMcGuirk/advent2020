@@ -9,5 +9,6 @@
     <Folder Include="Solvers\" />
     <Folder Include="Toboggan\" />
     <Folder Include="Luggage\" />
+    <Folder Include="VirtualMachines\" />
   </ItemGroup>
 </Project>
