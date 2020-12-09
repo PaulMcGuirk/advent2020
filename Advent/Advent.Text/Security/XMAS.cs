@@ -11,34 +11,28 @@ namespace Advent.Text.Security
         /// <paramref name="groupSize"/>, finds the first entry (beyond the
         /// initial <paramref name="groupSize"/> numbers) in
         /// <paramref name="nums"/> that is not the sum of two distinct
-        /// numbers amont the <paramref name="groupSize"/> entries
+        /// numbers among the <paramref name="groupSize"/> entries
         /// preceding that number
         /// </summary>
         /// <returns>The first number sastisfying this property,
         /// or <c>null</c> if none found.</returns>
         public static long? FindInvalid(IList<long> nums, int groupSize)
         {
+            var group = new HashSet<long>(nums.Take(groupSize));
+
             for (var i = groupSize; i < nums.Count; i++)
             {
                 var nextNum = nums[i];
-                var isValid = false;
 
-                // this check scales quadratically, but it's a quick way to
-                // handle the requirement that the number has to be
-                // the sum of two different entries
-                for (var j = i - groupSize; j < i && !isValid; j++)
-                {
-                    var diff = nextNum - nums[j];
-                    for (var k = j + 1; k < i && !isValid; k++)
-                    {
-                        isValid = diff == nums[k];
-                    }
-                }
+                var isValid = group.Any(x => 2 * x != nextNum && group.Contains(nextNum - x));
 
                 if (!isValid)
                 {
                     return nextNum;
                 }
+
+                group.Remove(nums[i] - groupSize);
+                group.Add(nextNum);
             }
 
             return null;
