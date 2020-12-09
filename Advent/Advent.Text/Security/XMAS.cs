@@ -18,9 +18,6 @@ namespace Advent.Text.Security
         /// or <c>null</c> if none found.</returns>
         public static long? FindInvalid(IList<long> nums, int groupSize)
         {
-            var group = nums.Take(groupSize).ToArray();
-            var oldestIndex = 0;
-
             for (var i = groupSize; i < nums.Count; i++)
             {
                 var nextNum = nums[i];
@@ -29,12 +26,12 @@ namespace Advent.Text.Security
                 // this check scales quadratically, but it's a quick way to
                 // handle the requirement that the number has to be
                 // the sum of two different entries
-                for (var j = 0; j < groupSize && !isValid; j++)
+                for (var j = i - groupSize; j < i && !isValid; j++)
                 {
-                    var diff = nextNum - group[j];
-                    for (var k = j + 1; k < groupSize && !isValid; k++)
+                    var diff = nextNum - nums[j];
+                    for (var k = j + 1; k < i && !isValid; k++)
                     {
-                        isValid = diff == group[k];
+                        isValid = diff == nums[k];
                     }
                 }
 
@@ -42,10 +39,6 @@ namespace Advent.Text.Security
                 {
                     return nextNum;
                 }
-
-                // dequeue the oldest number and enqueue the next
-                group[oldestIndex] = nextNum;
-                oldestIndex = (oldestIndex + 1) % groupSize;
             }
 
             return null;
