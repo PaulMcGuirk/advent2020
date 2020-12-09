@@ -14,3 +14,5 @@
 7.2 45018 input07.txt
 8.1 1394 input08.txt
 8.2 1626 input08.txt
+9.1 466456641 input09.txt
+9.2 55732936 input09.txt

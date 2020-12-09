@@ -10,5 +10,6 @@
     <Folder Include="Toboggan\" />
     <Folder Include="Luggage\" />
     <Folder Include="VirtualMachines\" />
+    <Folder Include="Security\" />
   </ItemGroup>
 </Project>
