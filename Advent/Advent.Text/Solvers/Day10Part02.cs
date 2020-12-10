@@ -17,20 +17,17 @@ namespace Advent.Text.Solvers
                 .ToList();
 
             adapters.Sort();
-            var builtIn = adapters.Last() + 3; // the built in adapeter is always 3 more jolts than the max in bag
+            var builtIn = adapters.Last() + 3;
             adapters.Add(builtIn);
 
-            // counts will hold the number of ways to end with the
-            // adapter of the given joltage
-            // since there's only 1 wall, there's one way to end with the wall
+            // counts will hold the number of ways to end with the adapter of
+            // the given joltage. There's exactly one way to end with the wall.
             var counts = new Dictionary<int, long> { [0] = 1 };
 
             foreach (var adapter in adapters)
             {
-                // We can put this adapeter at the end of any valid chain of
-                // adapters, so the number of ways to end with this adapter
-                // is jut the total number of chains that this adapter
-                // can be added to
+                // The number of chains that end with an adapter is the total
+                // number of chains that the adapter can be added to
                 counts[adapter] = Enumerable.Range(1, 3)
                     .Select(diff => counts.GetValueOrDefault(adapter - diff))
                     .Sum();
