@@ -16,3 +16,5 @@
 8.2 1626 input08.txt
 9.1 466456641 input09.txt
 9.2 55732936 input09.txt
+10.1 1656 input10.txt
+10.2 56693912375296 input10.txt
