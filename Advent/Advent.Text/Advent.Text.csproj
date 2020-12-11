@@ -11,5 +11,6 @@
     <Folder Include="Luggage\" />
     <Folder Include="VirtualMachines\" />
     <Folder Include="Security\" />
+    <Folder Include="Life\" />
   </ItemGroup>
 </Project>
