@@ -1,4 +1,4 @@
-﻿using Advent.Text.Toboggan;
+﻿using Advent.Text.Vehicles;
 
 namespace Advent.Text.Solvers
 {
@@ -8,7 +8,7 @@ namespace Advent.Text.Solvers
         public override object Solve()
         {
             var contents = ReadInputFile();
-            var forest = Forest.Parse(contents);
+            var forest = Toboggan.Parse(contents);
 
             var slope = new Slope { DeltaX = 3, DeltaY = 1 };
 

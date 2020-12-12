@@ -1,30 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Advent.Text.Life;
+﻿using Advent.Text.Vehicles;
 
 namespace Advent.Text.Solvers
 {
-    [Solver("11.2")]
-    public class Day11Part02 : Solver
+    [Solver("12.1")]
+    public class Day12Part01 : Solver
     {
         public override object Solve()
         {
-            var contents = ReadInputFile();
+            var instructions = ReadInputFile();
+
+            var ferry = new Ferry(Ferry.Directions.East, Ferry.NavigationModes.Absolute);
+
+            ferry.Navigate(instructions);
+
+            var result = ferry.Position.Magnitude;
             
-            var rules = new Dictionary<char, NextStateRule>
-            {
-                ['L'] = counts => counts['#'] == 0 ? '#' : 'L',
-                ['#'] = counts => counts['#'] >= 5 ? 'L' : '#',
-                ['.'] = _ => '.'
-            };
-
-            var life = new GenericLife(rules, contents, '.', NeighborCountingRules.Closest);
-
-            life.ContinueUntilFixed();
-
-            var result = life.Count('#');
-
             return result;
         }
     }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Advent.Text.Toboggan
+namespace Advent.Text.Vehicles
 {
-    public class Forest
+    public class Toboggan
     {
 
         /// <summary>
@@ -16,7 +16,7 @@ namespace Advent.Text.Toboggan
         private readonly int _numRows;
         private readonly int _numCols;
 
-        private Forest(List<List<TileType>> tiles)
+        private Toboggan(List<List<TileType>> tiles)
         {
             _tiles = tiles;
             _numRows = _tiles.Count;
@@ -28,14 +28,14 @@ namespace Advent.Text.Toboggan
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public static Forest Parse(string s)
+        public static Toboggan Parse(string s)
         {
             var tiles = s.Split('\n')
                 .Where(line => !string.IsNullOrEmpty(line))
                 .Select(ParseRow)
                 .ToList();
 
-            return new Forest(tiles);
+            return new Toboggan(tiles);
         }
 
         private static List<TileType> ParseRow(string s)
