@@ -3,8 +3,6 @@
 
 module Day02a where
 
-import Debug.Trace
-
 data PasswordEntry = PasswordEntry {
     a :: Int,
     b :: Int,

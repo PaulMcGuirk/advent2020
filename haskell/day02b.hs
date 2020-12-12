@@ -3,8 +3,6 @@
 
 module Day02b where
 
-import Debug.Trace
-
 data PasswordEntry = PasswordEntry {
     a :: Int,
     b :: Int,
@@ -23,7 +21,7 @@ parseEntry s = PasswordEntry {
         rangePieces = splitString range '-'
 
 isValid :: PasswordEntry -> Bool
-isValid PasswordEntry {a = a, b = b, ch = ch, password = password } = (password !! (a - 1) == ch) /= (password !! (b - 1) == ch)
+isValid PasswordEntry {a = a, b = b, ch = ch, password = password} = (password !! (a - 1) == ch) /= (password !! (b - 1) == ch)
 
 countIf :: (a -> Bool) -> [a] -> Int
 countIf p elems = countIfHelper elems 0
