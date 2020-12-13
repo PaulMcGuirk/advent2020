@@ -51,7 +51,7 @@ namespace Advent.Text.Solvers
             // numbers ak and so get the answer.
             foreach (var (prime, offset) in primesWithOffsets)
             {
-                var mod = ModFromOffSet(prime, offset);
+                var mod = offset == 0 ? 0 : prime - (offset % prime); // having an offset of a particular value is equivalent to having some remainder
                 while (result % prime != mod) // the number of times this loop runs is the number ak
                 {
                     result += product;
@@ -60,29 +60,6 @@ namespace Advent.Text.Solvers
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Given an offset, returns the corresponding mod with respect
-        /// to the given prime.
-        /// </summary>
-        /// <example>If <paramref name="prime"/>=13 and <paramref name="offset"/>=1,
-        /// this will return 12 because a positive number that is 1 less than 13
-        /// will have remainder 12 when divided by 13</example>
-        /// <param name="prime">The reference prime</param>
-        /// <param name="offset">The offset</param>
-        /// <returns>The mod</returns>
-        private int ModFromOffSet(int prime, int offset)
-        {
-            if (offset == 0)
-            {
-                return 0;
-            }
-
-            var mod = prime - offset;
-            while (mod < 0) mod += prime; // we'll need positive mods
-
-            return mod;
         }
     }
 }
