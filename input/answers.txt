@@ -22,3 +22,5 @@
 11.2 1862 input11.txt
 12.1 420 input12.txt
 12.2 42073 input12.txt
+13.1 2095 input13.txt
+13.2 598411311431841 input13.txt
