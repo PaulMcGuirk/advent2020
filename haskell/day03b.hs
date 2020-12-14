@@ -1,7 +1,7 @@
 -- Advent of Code 2020
 -- Day 3 Problem 2
 
-module Day03a where
+module Day03b where
 
 import Data.Array
 
