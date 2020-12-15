@@ -29,10 +29,10 @@ namespace Advent
             }
 
             var problemId = args[0];
-            
+
             Console.WriteLine($"Advent of Code 2020 Problem {problemId}");
             var result = GetSolution(problemId, filepath);
-            
+
             if (result == null)
             {
                 Console.WriteLine("No solution found");
