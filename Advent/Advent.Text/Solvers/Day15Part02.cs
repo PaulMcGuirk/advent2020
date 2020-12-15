@@ -21,19 +21,30 @@ namespace Advent.Text.Solvers
 
         private static int NumberGame(List<int> nums, int lastTurn)
         {
-            // first just read through the list of numbers
-            var mentions = nums.Select((num, index) => (num, turn: index + 1))
-                .ToDictionary(pair => pair.num, pair => pair.turn);
+            var arraySize = 10000;
+            var mentions = new int[arraySize];
 
-            var num = nums.Last();
-            var turn = nums.Count + 1;
-            int? previousTurn = null; // the previous time that a number was mentioned
+            // first just read off the initial numbers
+            var turn = 1;
+            int num, previousMention;
+            for (; turn <= nums.Count; turn++)
+            {
+                num = nums[turn - 1];
+                mentions[num] = turn;
+            }
 
+            // then look to the history
+            num = 0;
+            previousMention = 0;
             for (; turn <= lastTurn; turn++)
             {
-                num = (turn - 1 - previousTurn) ?? 0;
-
-                previousTurn = mentions.ContainsKey(num) ? mentions[num] : null;
+                num = previousMention == 0 ? 0 : (turn - 1 - previousMention);
+                if (num >= arraySize)
+                {
+                    arraySize *= 2;
+                    Array.Resize(ref mentions, arraySize);
+                }
+                previousMention = mentions[num];
                 mentions[num] = turn;
             }
 
