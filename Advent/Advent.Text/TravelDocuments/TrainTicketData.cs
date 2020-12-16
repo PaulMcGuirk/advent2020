@@ -28,21 +28,14 @@ namespace Advent.Text.TravelDocuments
         /// <returns></returns>
         public static TrainTicketData Parse(string s)
         {
-            var lineList = s.Trim().Split('\n').ToList();
-            var lines = lineList.GetEnumerator();
+            var lines = s.Trim().Split('\n').ToList().GetEnumerator();
 
             var data = new TrainTicketData();
 
-            // parse field data
-            while (lines.MoveNext())
+            // parse field ranges
+            while (lines.MoveNext() && !string.IsNullOrEmpty(lines.Current))
             {
-                var line = lines.Current;
-                if (string.IsNullOrEmpty(line))
-                {
-                    break;
-                }
-
-                var matches = _fieldRegex.Match(line);
+                var matches = _fieldRegex.Match(lines.Current);
                 if (!matches.Success)
                 {
                     throw new Exception($"Expected: field ranges. Actual: for {lines.Current}");
@@ -57,31 +50,17 @@ namespace Advent.Text.TravelDocuments
                 data._fieldRanges[fieldName] = new List<(int min, int max)> { (minOne, maxOne), (minTwo, maxTwo) };
             }
 
-            lines.MoveNext();
-
-            if (lines.Current != "your ticket:")
-            {
-                throw new Exception($"Expected literal \"your ticket:\". Actual: {lines.Current}");
-            }
-
+            lines.MoveNext(); // "your ticket:"
             lines.MoveNext();
             data._myTicket = lines.Current.Split(',').Select(int.Parse).ToList();
 
+            lines.MoveNext(); // expected blank
+            lines.MoveNext(); // "nearby ticket"
 
-            lines.MoveNext();
-            if (!string.IsNullOrEmpty(lines.Current))
-            {
-                throw new Exception($"Expected: blank. Actual {lines.Current}");
-            }
-
-            lines.MoveNext();
-            if (lines.Current != "nearby tickets:")
-            {
-                throw new Exception($"Expected literal \"nearby ticket:\": Actual: {lines.Current}");
-            }
-
+            // parse remaining tickets
             while (lines.MoveNext())
             {
+                
                 data._nearbyTickets.Add(lines.Current.Split(',').Select(int.Parse).ToList());
             }
 
@@ -131,10 +110,8 @@ namespace Advent.Text.TravelDocuments
             {
                 for (var i = 0; i < numFields; i++)
                 {
-                    var fieldValue = ticket[i];
-                    var possibleFieldsForValue = possibleFields[i]
-                        .Where(field => FieldContainsValue(field, fieldValue));
-                    possibleFields[i].IntersectWith(possibleFieldsForValue);
+                    // remove anything that doesn't fit
+                    possibleFields[i].IntersectWith(possibleFields[i].Where(field => FieldContainsValue(field, ticket[i])));
                 }
             }
 
@@ -142,18 +119,15 @@ namespace Advent.Text.TravelDocuments
             // to narrow down the others
             while (true)
             {
-                var hasUndeterminedSets = false;
-                var hasNoDeterminedSets = true;
-
+                var done = true;
                 for (var i = 0; i < numFields; i++)
                 {
                     if (possibleFields[i].Count > 1)
                     {
-                        hasUndeterminedSets = true;
+                        done = false;
                         continue;
                     }
 
-                    hasNoDeterminedSets = false;
                     var field = possibleFields[i].First();
                     for (var j = 0; j < numFields; j++)
                     {
@@ -163,12 +137,7 @@ namespace Advent.Text.TravelDocuments
                         }
                     }
                 }
-
-                if (hasNoDeterminedSets)
-                {
-                    throw new Exception("Can't deduce fields");
-                }
-                if (!hasUndeterminedSets)
+                if (done)
                 {
                     break;
                 }
