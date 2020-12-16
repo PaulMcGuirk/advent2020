@@ -100,19 +100,13 @@ namespace Advent.Text.TravelDocuments
 
             var numFields = _fieldRanges.Count;
             var possibleFields = new List<HashSet<string>>();
-            for (var i = 0; i < numFields; i++)
-            {
-                possibleFields.Add(new HashSet<string>(_fieldRanges.Keys));
-            }
 
             // based on all the field values, narrow down the list of fields
-            foreach (var ticket in validTickets)
+            for (var i = 0; i < numFields; i++)
             {
-                for (var i = 0; i < numFields; i++)
-                {
-                    // remove anything that doesn't fit
-                    possibleFields[i].IntersectWith(possibleFields[i].Where(field => FieldContainsValue(field, ticket[i])));
-                }
+                possibleFields.Add(validTickets
+                    .Select(ticket => _fieldRanges.Keys.Where(fieldName => FieldContainsValue(fieldName, ticket[i])).ToHashSet())
+                    .Aggregate(new HashSet<string>(_fieldRanges.Keys), (result, next) => result.Intersect(next).ToHashSet()));
             }
 
             // if any slot has been reduced to one field, we can use that field
