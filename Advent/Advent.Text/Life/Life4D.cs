@@ -47,8 +47,7 @@ namespace Advent.Text.Life
         /// </summary>
         public void Tick()
         {
-            var newAlive = GetAllSpace().Where(WillSurvive).ToHashSet();
-            _alive = newAlive;
+            _alive = GetAllSpace().Where(WillSurvive).ToHashSet();
             _min = new Point { X = _min.X - 1, Y = _min.Y - 1, Z = _min.Z - 1, W = _min.W - 1 };
             _max = new Point { X = _max.X + 1, Y = _max.Y + 1, Z = _max.Z + 1, W = _max.W + 1 };
         }
@@ -72,9 +71,7 @@ namespace Advent.Text.Life
         /// <returns><c>true</c> if the point will be alive, false otherwise</returns>
         private bool WillSurvive(Point point)
         {
-            var livingCount = point.GetNeighbors().Where(n => _alive.Contains(n)).Count();
-
-            //Console.WriteLine($"Point {point} is ${_alive.Contains(point)} and has {livingCount} neighbors");
+            var livingCount = point.GetNeighbors().Where(_alive.Contains).Count();
 
             return _alive.Contains(point) switch
             {
@@ -116,10 +113,10 @@ namespace Advent.Text.Life
         /// </summary>
         private record Point
         {
-            public int X { get; set; }
-            public int Y { get; set; }
-            public int Z { get; set; }
-            public int W { get; set; }
+            public int X { get; init; }
+            public int Y { get; init; }
+            public int Z { get; init; }
+            public int W { get; init; }
 
             /// <summary>
             /// Get all of the neighbors of this point
