@@ -4,22 +4,18 @@ using System.Linq;
 
 namespace Advent.Text.Life
 {
-    
+
     /// <summary>
-    /// A generic game of 3D life in an infinite space with multiple states and
+    /// A generic game of 4D life in an infinite space with multiple states and
     /// rules that are specified by the consumer
     /// </summary>
     public class Life4D
     {
         private HashSet<Point> _alive;
-        private Point _max; // max an min will keep track of the extent of space we're worried about
-        private Point _min;
-        
+
         public Life4D()
         {
             _alive = new HashSet<Point>();
-            _max = new Point { X = 0, Y = 0, Z = 0, W = 0 };
-            _min = new Point { X = 0, Y = 0, Z = 0, W = 0 };
         }
 
         /// <summary>
@@ -32,13 +28,13 @@ namespace Advent.Text.Life
             _alive = new HashSet<Point>();
 
             var tiles = state.Trim().Split('\n').ToList();
-            _min = new Point { X = 0, Y = 0, Z = 0, W = 0};
-            _max = new Point { X = tiles[0].Length, Y = tiles.Count, Z = 1, W = 1 };
+            var numRows = tiles.Count;
+            var numCols = tiles[0].Length;
 
-            _alive = Enumerable.Range(0, _max.Y)
-                .SelectMany(y => Enumerable.Range(0, _max.X)
+            _alive = Enumerable.Range(0, numRows)
+                .SelectMany(y => Enumerable.Range(0, numCols)
                                     .Where(x => tiles[y][x] == '#')
-                                    .Select(x => new Point { X = x, Y = y, Z = 0, W = 0}))
+                                    .Select(x => new Point { X = x, Y = y }))
                 .ToHashSet();
         }
 
@@ -46,11 +42,7 @@ namespace Advent.Text.Life
         /// Simulate one tick in life.
         /// </summary>
         public void Tick()
-        {
-            _alive = GetAllSpace().Where(WillSurvive).ToHashSet();
-            _min = new Point { X = _min.X - 1, Y = _min.Y - 1, Z = _min.Z - 1, W = _min.W - 1 };
-            _max = new Point { X = _max.X + 1, Y = _max.Y + 1, Z = _max.Z + 1, W = _max.W + 1 };
-        }
+            => _alive = _alive.SelectMany(tile => tile.GetNeighbors(true)).Where(WillSurvive).ToHashSet();
 
         /// <summary>
         /// Tick a given number of ticks
@@ -84,29 +76,7 @@ namespace Advent.Text.Life
         /// Count the number of spaces that are alive
         /// </summary>
         /// <returns>The number of spaces currently alive</returns>
-        public int CountLiving()
-            => GetAllSpace().Count(_alive.Contains);
-
-        /// <summary>
-        /// Generate all relevant points in space
-        /// </summary>
-        /// <returns>The points to generate</returns>
-        private IEnumerable<Point> GetAllSpace()
-        {
-            for (var w = _min.W - 1; w <= _max.W; w++)
-            {
-                for (var z = _min.Z - 1; z <= _max.Z; z++)
-                {
-                    for (var y = _min.Y - 1; y <= _max.Y; y++)
-                    {
-                        for (var x = _min.X - 1; x <= _max.X; x++)
-                        {
-                            yield return new Point { X = x, Y = y, Z = z, W = w };
-                        }
-                    }
-                }
-            }
-        }
+        public int CountLiving() => _alive.Count();
 
         /// <summary>
         /// A point in 3D space
@@ -121,18 +91,19 @@ namespace Advent.Text.Life
             /// <summary>
             /// Get all of the neighbors of this point
             /// </summary>
+            /// <param name="includeSelf">Whether to include the point itself in the return</param>
             /// <returns>The neighbors of this point</returns>
-            public IEnumerable<Point> GetNeighbors()
+            public IEnumerable<Point> GetNeighbors(bool includeSelf = false)
             {
-                for (var deltaZ = -1; deltaZ <= 1; deltaZ++)
+                for (var deltaW = -1; deltaW <= 1; deltaW++)
                 {
-                    for (var deltaY = -1; deltaY <= 1; deltaY++)
+                    for (var deltaZ = -1; deltaZ <= 1; deltaZ++)
                     {
-                        for (var deltaX = -1; deltaX <= 1; deltaX++)
+                        for (var deltaY = -1; deltaY <= 1; deltaY++)
                         {
-                            for (var deltaW = -1; deltaW <= 1; deltaW++)
+                            for (var deltaX = -1; deltaX <= 1; deltaX++)
                             {
-                                if (deltaX == 0 && deltaY == 0 && deltaZ == 0 && deltaW == 0)
+                                if (!includeSelf && deltaX == 0 && deltaY == 0 && deltaZ == 0 && deltaW == 0)
                                 {
                                     continue;
                                 }
