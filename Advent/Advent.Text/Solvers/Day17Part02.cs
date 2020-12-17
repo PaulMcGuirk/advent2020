@@ -9,8 +9,8 @@ namespace Advent.Text.Solvers
         public override object Solve()
         {
             var rawInput = ReadInputFile();
-            
-            var life = new Life4D();
+
+            var life = new LifeND<Point4D>();
             life.SetStatePlanar(rawInput);
 
             life.Tick(6);

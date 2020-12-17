@@ -10,7 +10,8 @@ namespace Advent.Text.Solvers
         {
             var rawInput = ReadInputFile();
 
-            var life = new Life3D();
+            //var life = new Life3D();
+            var life = new LifeND<Point3D>();
             life.SetStatePlanar(rawInput);
 
             life.Tick(6);
