@@ -30,3 +30,5 @@
 15.2 814 input15.txt
 16.1 27802 input16.txt
 16.2 279139880759 input16.txt
+17.1 295 input17.txt
+17.2 1972 input17.txt
