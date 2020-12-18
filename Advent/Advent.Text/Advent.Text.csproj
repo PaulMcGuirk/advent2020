@@ -11,5 +11,6 @@
     <Folder Include="VirtualMachines\" />
     <Folder Include="Security\" />
     <Folder Include="Life\" />
+    <Folder Include="Math\" />
   </ItemGroup>
 </Project>
