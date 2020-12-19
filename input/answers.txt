@@ -33,3 +33,6 @@
 17.1 295 input17.txt
 17.2 1972 input17.txt
 18.1 280014646144 input18.txt
+18.2 9966990988262 input18.txt
+19.1 144 input19.txt
+19.2 260 input19.txt
