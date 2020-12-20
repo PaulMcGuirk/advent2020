@@ -50,9 +50,9 @@ namespace Advent.Text.ImageProcessing
         /// the second the number of turns to the right that need to be made to the tile
         /// to get it to fit, and the third is whether the tile should be flipped over the
         /// vertical axis before rotating.</returns>
-        public (long tileId, int numTurns, bool isFlipped)[,] Solve()
+        public TilePlacement[,] Solve()
         {
-            var trials = new Stack<( (long tileId, int numTurns, bool flipped)?[,] trial, (int row, int col) lastAdded, HashSet<long> used)>();
+            var trials = new Stack<(TilePlacement[,] trial, (int row, int col) lastAdded, HashSet<long> used)>();
 
             // we'll use a depth first search to look for a solution. Start by
             // trying every piece in the upper left corner
@@ -60,10 +60,10 @@ namespace Advent.Text.ImageProcessing
             {
                 for (var numTurns = 0; numTurns < 4; numTurns++)
                 {
-                    foreach (var flipped in _boolVals)
+                    foreach (var isFlipped in _boolVals)
                     {
-                        var trial = new (long tileId, int numTurns, bool flipped)?[ImageSizeInTiles, ImageSizeInTiles];
-                        trial[0, 0] = (tileId, numTurns, flipped);
+                        var trial = new TilePlacement[ImageSizeInTiles, ImageSizeInTiles];
+                        trial[0, 0] = new TilePlacement { TileId = tileId, NumTurns = numTurns, IsFlipped = isFlipped };
                         trials.Push((trial, (0, 0), new HashSet<long> { tileId }));
                     }
                 }
@@ -83,15 +83,7 @@ namespace Advent.Text.ImageProcessing
                     // means that we're done. Let's map the input
                     if (toAdd.row >= ImageSizeInTiles)
                     {
-                        var result = new (long tileId, int numTurns, bool isFlipped)[ImageSizeInTiles, ImageSizeInTiles];
-                        for (var i = 0; i < ImageSizeInTiles; i++)
-                        {
-                            for (var j = 0; j < ImageSizeInTiles; j++)
-                            {
-                                result[i, j] = trial[i, j].Value;
-                            }
-                        }
-                        return result;
+                        return trial;
                     }
                 }
 
@@ -102,8 +94,8 @@ namespace Advent.Text.ImageProcessing
                 var topSide = (string)null;
                 if (toAdd.row > 0)
                 {
-                    var (topSideId, topSideNumTurns, topSideFlipped) = trial[toAdd.row - 1, toAdd.col].Value;
-                    topSide = string.Concat(_tiles[topSideId].GetSide(Side.Bottom, topSideNumTurns, topSideFlipped).Reverse());
+                    var top = trial[toAdd.row - 1, toAdd.col]; 
+                    topSide = string.Concat(_tiles[top.TileId].GetSide(Side.Bottom, top.NumTurns, top.IsFlipped).Reverse());
                     possibleMatches = possibleMatches.Where(id => _allSides[topSide].Contains(id));
                 }
 
@@ -111,8 +103,8 @@ namespace Advent.Text.ImageProcessing
                 var leftSide = (string)null;
                 if (toAdd.col > 0)
                 {
-                    var (leftSideId, leftSideNumTurns, leftSideFlipped) = trial[toAdd.row, toAdd.col - 1].Value;
-                    leftSide = string.Concat(_tiles[leftSideId].GetSide(Side.Right, leftSideNumTurns, leftSideFlipped).Reverse());
+                    var left = trial[toAdd.row, toAdd.col - 1];
+                    leftSide = string.Concat(_tiles[left.TileId].GetSide(Side.Right, left.NumTurns, left.IsFlipped).Reverse());
                     possibleMatches = possibleMatches.Where(id => _allSides[leftSide].Contains(id));
                 }
 
@@ -123,20 +115,21 @@ namespace Advent.Text.ImageProcessing
                     var matchTile = _tiles[possibleMatch];
                     for (var numTurns = 0; numTurns < 4; numTurns++)
                     {
-                        foreach (var flipped in _boolVals)
+                        foreach (var isFlipped in _boolVals)
                         {
-                            if (topSide != null && matchTile.GetSide(Side.Top, numTurns, flipped) != topSide)
+                            if (topSide != null && matchTile.GetSide(Side.Top, numTurns, isFlipped) != topSide)
                             {
                                 continue;
                             }
 
-                            if (leftSide != null && matchTile.GetSide(Side.Left, numTurns, flipped) != leftSide)
+                            if (leftSide != null && matchTile.GetSide(Side.Left, numTurns, isFlipped) != leftSide)
                             {
                                 continue;
                             }
 
-                            var newTrial = trial.Clone() as (long tileId, int numTurns, bool flipped)?[,];
-                            newTrial[toAdd.row, toAdd.col] = (matchTile.Id, numTurns, flipped);
+                            var newTrial = trial.Clone() as TilePlacement[,];
+                            //newTrial[toAdd.row, toAdd.col] = (matchTile.Id, numTurns, flipped);
+                            newTrial[toAdd.row, toAdd.col] = new TilePlacement { TileId = matchTile.Id, NumTurns = numTurns, IsFlipped = isFlipped };
 
                             var newUsed = new HashSet<long>(used) { matchTile.Id };
                             trials.Push((newTrial, (toAdd.row, toAdd.col), newUsed));
@@ -155,9 +148,7 @@ namespace Advent.Text.ImageProcessing
         /// <param name="solution">The solution</param>
         /// <param name="patternString">The pattern of sea monster to look for</param>
         /// <returns>The roughness</returns>
-        public int? GetRoughness(
-            (long tileId, int numTurns, bool isFlipped)[,] solution,
-            string patternString)
+        public int? GetRoughness(TilePlacement[,] solution, string patternString)
         {
             var pixels = GetPixelsForSolution(solution);
 
@@ -168,10 +159,6 @@ namespace Advent.Text.ImageProcessing
                 .Select(s => s.Select((c, i) => (c, i)).Where(pair => pair.c == '#').Select(pair => pair.i).ToList())
                 .SelectMany((cols, row) => cols.Select(col => (row, col)))
                 .ToList();
-
-            //var pattern = patternString.Split('\n')
-            //    .SelectMany((s, i) => (i, s.Select((c, j) => (c, j)).Where(pair => pair.c == '#').Select(pair => pair.j)))
-            //    .ToList();
 
             return GetOrientations(pixels)
                 .Select(p => GetRoughness(p, pattern))
@@ -184,7 +171,7 @@ namespace Advent.Text.ImageProcessing
         /// </summary>
         /// <param name="solution">The solution</param>
         /// <returns>The image data as an array of pixel values</returns>
-        private char[,] GetPixelsForSolution((long tileId, int numTurns, bool isFlipped)[,] solution)
+        private char[,] GetPixelsForSolution(TilePlacement[,] solution)
         {
             // the image size in pixels
             var tileSizeInPixels = Tile.TILE_SIZE - 2;
@@ -198,22 +185,21 @@ namespace Advent.Text.ImageProcessing
                 var tilePixels = Enumerable.Range(0, ImageSizeInTiles)
                     .Select(j =>
                     {
-                        var (tileId, numTurns, isFlipped) = solution[i, j];
-                        var tile = _tiles[tileId];
-                        return tile.GetPixels(numTurns, isFlipped);
+                        var placement = solution[i, j];
+                        var tile = _tiles[placement.TileId];
+                        return tile.GetPixels(placement.NumTurns, placement.IsFlipped);
                     })
                     .ToList();
-                var numRows = tilePixels[0].Count;
 
-                var rows = Enumerable.Range(0, numRows)
+                var rows = Enumerable.Range(0, tileSizeInPixels)
                     .Select(j => string.Concat(tilePixels.Select(x => x[j])))
                     .ToList();
 
-                for (var k = 0; k < numRows; k++)
+                for (var k = 0; k < tileSizeInPixels; k++)
                 {
                     for (var j = 0; j < imageSize; j++)
                     {
-                        pixels[i * numRows + k, j] = rows[k][j];
+                        pixels[i * tileSizeInPixels + k, j] = rows[k][j];
                     }
                 }
             }
@@ -438,9 +424,6 @@ namespace Advent.Text.ImageProcessing
                         .Select(j => data[i, j]))
                     ).ToList();
             }
-
-            
-
         }
 
         private enum Side
@@ -449,6 +432,25 @@ namespace Advent.Text.ImageProcessing
             Right = 1,
             Bottom = 2,
             Left = 3
+        }
+
+        /// <summary>
+        /// Data for a tile placemeent
+        /// </summary>
+        public record TilePlacement
+        {
+            /// <summary>
+            /// The id of the tile
+            /// </summary>
+            public long TileId { get; init; }
+            /// <summary>
+            /// The number of clockwise turns from the input data to make
+            /// </summary>
+            public int NumTurns { get; init; }
+            /// <summary>
+            /// Whether the tile should be flipped before rotating
+            /// </summary>
+            public bool IsFlipped { get; init; }
         }
     }
 }

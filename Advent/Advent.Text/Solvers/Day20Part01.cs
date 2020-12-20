@@ -18,8 +18,8 @@ namespace Advent.Text.Solvers
                 return null;
             }
 
-            var result = solution[0, 0].tileId * solution[0, jigsaw.ImageSizeInTiles - 1].tileId
-                * solution[jigsaw.ImageSizeInTiles - 1, 0].tileId * solution[jigsaw.ImageSizeInTiles - 1, jigsaw.ImageSizeInTiles - 1].tileId;
+            var result = solution[0, 0].TileId * solution[0, jigsaw.ImageSizeInTiles - 1].TileId
+                * solution[jigsaw.ImageSizeInTiles - 1, 0].TileId * solution[jigsaw.ImageSizeInTiles - 1, jigsaw.ImageSizeInTiles - 1].TileId;
 
             return result;
         }
