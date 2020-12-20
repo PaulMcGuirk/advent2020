@@ -8,13 +8,23 @@ namespace Advent.Text.ImageProcessing
     public class JigsawCamera
     {
         private readonly Dictionary<long, Tile> _tiles;
-        public int PictureSize { get; }
+        /// <summary>
+        /// For a given side, this holds the IDs of all tiles that contain that
+        /// side after a rotation or flip
+        /// </summary>
         private readonly Dictionary<string, List<long>> _allSides;
+
+        /// <summary>
+        /// The number of tiles along the length of the image
+        /// </summary>
+        public int ImageSizeInTiles { get; }
 
         private static readonly bool[] _boolVals = new bool[] { false, true };
 
-        
-
+        /// <summary>
+        /// Create a new image from a string
+        /// </summary>
+        /// <param name="s">The stringof data</param>
         public JigsawCamera(string s)
         {
             _tiles = s.Trim().Split("\n\n")
@@ -22,8 +32,8 @@ namespace Advent.Text.ImageProcessing
                 .ToDictionary(tile => tile.Id);
 
             var numTiles = _tiles.Count;
-            PictureSize = (int)Math.Sqrt(numTiles);
-            if (PictureSize * PictureSize != numTiles)
+            ImageSizeInTiles = (int)Math.Sqrt(numTiles);
+            if (ImageSizeInTiles * ImageSizeInTiles != numTiles)
             {
                 throw new ArgumentException("Number of tiles is not a square or there was a rounding error");
             }
@@ -52,7 +62,7 @@ namespace Advent.Text.ImageProcessing
                 {
                     foreach (var flipped in _boolVals)
                     {
-                        var trial = new (long tileId, int numTurns, bool flipped)?[PictureSize, PictureSize];
+                        var trial = new (long tileId, int numTurns, bool flipped)?[ImageSizeInTiles, ImageSizeInTiles];
                         trial[0, 0] = (tileId, numTurns, flipped);
                         trials.Push((trial, (0, 0), new HashSet<long> { tileId }));
                     }
@@ -66,17 +76,17 @@ namespace Advent.Text.ImageProcessing
                 // we're going to take the work so far and try to add on the
                 // next tile, going left to right then top to bottom
                 var toAdd = (lastAdded.row, col: lastAdded.col + 1);
-                if (toAdd.col >= PictureSize)
+                if (toAdd.col >= ImageSizeInTiles)
                 {
                     toAdd = (row: lastAdded.row + 1, col: 0);
                     // if we're trying to add below the picture, then that
-                    // means that we're done
-                    if (toAdd.row >= PictureSize)
+                    // means that we're done. Let's map the input
+                    if (toAdd.row >= ImageSizeInTiles)
                     {
-                        var result = new (long tileId, int numTurns, bool isFlipped)[PictureSize, PictureSize];
-                        for (var i = 0; i < PictureSize; i++)
+                        var result = new (long tileId, int numTurns, bool isFlipped)[ImageSizeInTiles, ImageSizeInTiles];
+                        for (var i = 0; i < ImageSizeInTiles; i++)
                         {
-                            for (var j = 0; j < PictureSize; j++)
+                            for (var j = 0; j < ImageSizeInTiles; j++)
                             {
                                 result[i, j] = trial[i, j].Value;
                             }
@@ -127,6 +137,7 @@ namespace Advent.Text.ImageProcessing
 
                             var newTrial = trial.Clone() as (long tileId, int numTurns, bool flipped)?[,];
                             newTrial[toAdd.row, toAdd.col] = (matchTile.Id, numTurns, flipped);
+
                             var newUsed = new HashSet<long>(used) { matchTile.Id };
                             trials.Push((newTrial, (toAdd.row, toAdd.col), newUsed));
                         }
@@ -148,26 +159,54 @@ namespace Advent.Text.ImageProcessing
             (long tileId, int numTurns, bool isFlipped)[,] solution,
             string patternString)
         {
+            var pixels = GetPixelsForSolution(solution);
 
-            var imageSize = (Tile.TILE_SIZE - 2) * PictureSize;
+            //var pattern = new List<(int, int)>();
+
+            // transform the raw string into a mask that we'll use
+            var pattern = patternString.Split('\n')
+                .Select(s => s.Select((c, i) => (c, i)).Where(pair => pair.c == '#').Select(pair => pair.i).ToList())
+                .SelectMany((cols, row) => cols.Select(col => (row, col)))
+                .ToList();
+
+            //var pattern = patternString.Split('\n')
+            //    .SelectMany((s, i) => (i, s.Select((c, j) => (c, j)).Where(pair => pair.c == '#').Select(pair => pair.j)))
+            //    .ToList();
+
+            return GetOrientations(pixels)
+                .Select(p => GetRoughness(p, pattern))
+                .FirstOrDefault(roughess => roughess.HasValue);
+        }
+
+        /// <summary>
+        /// For a given solution, which consits of an array of tiles and their
+        /// orientations, returns the corresponding solution in pixels.
+        /// </summary>
+        /// <param name="solution">The solution</param>
+        /// <returns>The image data as an array of pixel values</returns>
+        private char[,] GetPixelsForSolution((long tileId, int numTurns, bool isFlipped)[,] solution)
+        {
+            // the image size in pixels
+            var tileSizeInPixels = Tile.TILE_SIZE - 2;
+            var imageSize = tileSizeInPixels * ImageSizeInTiles;
 
             var pixels = new char[imageSize, imageSize];
 
             // patch the rotated and flipped tiles to form the over all image
-            for (var i = 0; i < PictureSize; i++)
+            for (var i = 0; i < ImageSizeInTiles; i++)
             {
-                var tileData = Enumerable.Range(0, PictureSize)
+                var tilePixels = Enumerable.Range(0, ImageSizeInTiles)
                     .Select(j =>
                     {
                         var (tileId, numTurns, isFlipped) = solution[i, j];
                         var tile = _tiles[tileId];
-                        return tile.GetData(numTurns, isFlipped);
+                        return tile.GetPixels(numTurns, isFlipped);
                     })
                     .ToList();
-                var numRows = tileData[0].Count;
+                var numRows = tilePixels[0].Count;
 
                 var rows = Enumerable.Range(0, numRows)
-                    .Select(j => string.Concat(tileData.Select(x => x[j])))
+                    .Select(j => string.Concat(tilePixels.Select(x => x[j])))
                     .ToList();
 
                 for (var k = 0; k < numRows; k++)
@@ -179,14 +218,7 @@ namespace Advent.Text.ImageProcessing
                 }
             }
 
-            // transform the raw string into a mask that we'll use
-            var pattern = patternString.Split('\n')
-                .Select(s => s.Select((c, i) => (c, i)).Where(pair => pair.c == '#').Select(pair => pair.i).ToList())
-                .ToList();
-
-            return GetOrientations(pixels)
-                .Select(p => GetRoughness(p, pattern))
-                .FirstOrDefault(roughess => roughess.HasValue);
+            return pixels;
         }
 
         /// <summary>
@@ -195,7 +227,7 @@ namespace Advent.Text.ImageProcessing
         /// </summary>
         /// <param name="pixels">A square matrix of pixels</param>
         /// <returns>All possible orientations</returns>
-        private IEnumerable<char[,]> GetOrientations(char[,] pixels)
+        private static IEnumerable<char[,]> GetOrientations(char[,] pixels)
         {
             yield return pixels;
 
@@ -205,7 +237,6 @@ namespace Advent.Text.ImageProcessing
                 yield return pixels;
             }
 
-            pixels = RotateSquareMatrix(pixels);
             pixels = FlipSquareMatrix(pixels);
             yield return pixels;
 
@@ -224,24 +255,18 @@ namespace Advent.Text.ImageProcessing
         /// <param name="pixels">The pixels to scan</param>
         /// <param name="pattern">The pattern to search for</param>
         /// <returns>The roughness if found, null otherwise</returns>
-        private static int? GetRoughness(char[,] pixels, List<List<int>> pattern)
+        private static int? GetRoughness(char[,] pixels, List<(int row, int col)> pattern)
         {
             var inPattern = new HashSet<(int, int)>();
-            var patternLength = pattern.Select(l => l.Max()).Max();
+            var patternDeltaRow = pattern.Select(pair => pair.row).Max();
+            var patternDeltaCol = pattern.Select(pair => pair.col).Max();
             var size = pixels.GetLength(0);
 
-            for (var i = 0; i <= (size - pattern.Count); i++)
+            for (var i = 0; i < size - patternDeltaRow; i++)
             {
-                for (var j = 0; j < size - patternLength; j++)
+                for (var j = 0; j < size - patternDeltaCol; j++)
                 {
-                    var toCheck = new HashSet<(int row, int col)>();
-                    for (var k = 0; k < pattern.Count; k++)
-                    {
-                        foreach (var pos in pattern[k])
-                        {
-                            toCheck.Add((i + k, j + pos));
-                        }
-                    }
+                    var toCheck = pattern.Select(pair => (row: i + pair.row, col: j + pair.col));
                     if (toCheck.All(pair => pixels[pair.row, pair.col] == '#'))
                     {
                         inPattern.UnionWith(toCheck);
@@ -254,26 +279,16 @@ namespace Advent.Text.ImageProcessing
                 return null;
             }
 
-            var result = 0;
-            for (var i = 0; i < size; i++)
-            {
-                for (var j = 0; j < size; j++)
-                {
-                    if (inPattern.Contains((i, j)))
-                    {
-                        continue;
-                    }
-                    if (pixels[i, j] == '#')
-                    {
-                        result++;
-                    }
-                }
-            }
+            var result = Enumerable.Range(0, size)
+                .Select(i => Enumerable.Range(0, size)
+                    .Count(j => !inPattern.Contains((i, j)) && pixels[i, j] == '#'))
+                .Sum();
+            
             return result;
         }
 
         /// <summary>
-        /// Get a flip of the square matrix
+        /// Get a flip of a square matrix
         /// </summary>
         /// <param name="m">The matrix to flip</param>
         /// <returns>The flipped matrix</returns>
@@ -397,7 +412,7 @@ namespace Advent.Text.ImageProcessing
             /// <param name="numTurns">The number of turns</param>
             /// <param name="flipped">Whether the tile is flipped</param>
             /// <returns></returns>
-            public List<string> GetData(int numTurns, bool flipped)
+            public List<string> GetPixels(int numTurns, bool flipped)
             {
                 var data = new char[TILE_SIZE - 2, TILE_SIZE - 2];
                 for (var i = 0; i < TILE_SIZE - 2; i++)
