@@ -1,11 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- Advent of Code 2020
 -- Day 7 Part 1
 
 module Day07a where
 
--- import Data.Text
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Text.Read (readMaybe)
