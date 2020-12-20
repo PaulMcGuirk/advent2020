@@ -13,5 +13,6 @@
     <Folder Include="Life\" />
     <Folder Include="Math\" />
     <Folder Include="Communication\" />
+    <Folder Include="ImageProcessing\" />
   </ItemGroup>
 </Project>
