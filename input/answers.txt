@@ -38,3 +38,5 @@
 19.2 260 input19.txt
 20.1 107399567124539 input20.txt
 20.2 1555 input20.txt
+21.1 2265 input21.txt
+21.2 dtb,zgk,pxr,cqnl,xkclg,xtzh,jpnv,lsvlx input21.txt
