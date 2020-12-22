@@ -40,3 +40,5 @@
 20.2 1555 input20.txt
 21.1 2265 input21.txt
 21.2 dtb,zgk,pxr,cqnl,xkclg,xtzh,jpnv,lsvlx input21.txt
+22.1 33403 input22.txt
+22.2 29177 input22.txt

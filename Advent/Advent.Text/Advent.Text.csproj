@@ -15,5 +15,6 @@
     <Folder Include="Communication\" />
     <Folder Include="ImageProcessing\" />
     <Folder Include="Language\" />
+    <Folder Include="Games\" />
   </ItemGroup>
 </Project>
