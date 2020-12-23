@@ -42,3 +42,5 @@
 21.2 dtb,zgk,pxr,cqnl,xkclg,xtzh,jpnv,lsvlx input21.txt
 22.1 33403 input22.txt
 22.2 29177 input22.txt
+23.1 75893264 input23.txt
+23.2 38162588308 input23.txt

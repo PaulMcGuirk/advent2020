@@ -1,5 +1,4 @@
-﻿
-using System.Linq;
+﻿using System.Linq;
 using Advent.Text.Games;
 
 namespace Advent.Text.Solvers
