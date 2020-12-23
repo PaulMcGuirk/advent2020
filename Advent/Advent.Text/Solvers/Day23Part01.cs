@@ -12,7 +12,7 @@ namespace Advent.Text.Solvers
 
             var nums = contents.Trim().Select(digit => (int)char.GetNumericValue(digit)).ToList();
 
-            var cups = new Cups(nums);
+            var cups = new Cups(nums, 3);
             cups.Play(100);
 
             var result = string.Concat(cups.GetCups(1).Skip(1));

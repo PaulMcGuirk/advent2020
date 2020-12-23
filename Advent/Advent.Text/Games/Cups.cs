@@ -9,35 +9,57 @@ namespace Advent.Text.Games
     /// </summary>
     public class Cups
     {
-        private readonly Dictionary<int, int> _next; // the value is the cup that comes after the key
-        private int _current;
-        
+        private readonly int[] _next;
+        private readonly int _pickupCount;
+        private readonly int[] _removed; // temporarily stores cups that have been removed
         private readonly int _maxValue;
+
+        private int _current;
 
         /// <summary>
         /// Create a new game of cups with the given collection of entries
         /// </summary>
         /// <param name="nums"></param>
-        public Cups(IEnumerable<int> nums)
+        /// <param name="pickupCount">The number of cups to pick up during the
+        /// pickup segment </param>
+        /// <param name="fillTo">If set, additional cups will be added until
+        /// the total number of cups is equal to this parameter</param>
+        public Cups(IEnumerable<int> nums, int pickupCount, int? fillTo = null)
         {
-            _next = new Dictionary<int, int>();
+            var maxInNums = nums.Max();
 
+            _maxValue = fillTo ?? maxInNums;
+
+            _next = new int[_maxValue + 1];
+            
             var first = nums.First();
             _current = first;
-            _maxValue = first;
 
             foreach (var num in nums.Skip(1))
             {
+                // set the numbers passed in
                 _next[_current] = num;
                 _current = num;
-                if (num > _maxValue)
+            }
+
+            if (fillTo.HasValue)
+            {
+                // do the filling
+                _next[_current] = maxInNums + 1;
+                _current = maxInNums + 1;
+
+                while (_current < _maxValue)
                 {
-                    _maxValue = num;
+                    _next[_current] = ++_current;
                 }
             }
 
+            // close the loop and set the current pointer
             _next[_current] = first;
             _current = first;
+
+            _pickupCount = pickupCount;
+            _removed = new int[_pickupCount];
         }
 
         /// <summary>
@@ -57,10 +79,10 @@ namespace Advent.Text.Games
         /// </summary>
         public void PlayRound()
         {
-            var removed = RemoveNext(3);
+            RemoveCups();
 
             var destination = _current - 1;
-            while (destination <= 0 || removed.Contains(destination))
+            while (destination <= 0 || _removed.Contains(destination))
             {
                 destination--;
                 if (destination <= 0)
@@ -69,12 +91,7 @@ namespace Advent.Text.Games
                 }
             }
 
-            AddListAfter(destination, removed);
-
-            //for (var i = 0; i < 3; i++)
-            //{
-            //    AddAfter(destination, removed[2 - i]);
-            //}
+            ReplaceCups(destination);
 
             _current = _next[_current];
         }
@@ -94,39 +111,31 @@ namespace Advent.Text.Games
         }
 
         /// <summary>
-        /// Remove a number of nodes from the list
+        /// Perform the remove step, updating list pointers
+        /// to skip over the removed, and storing the removed values
+        /// in the removed list
         /// </summary>
-        /// <param name="numToRemove">The numbers to remove</param>
-        /// <returns>The nodes removed</returns>
-        private int[] RemoveNext(int numToRemove)
+        private void RemoveCups()
         {
-            var removed = new int[numToRemove];
-
             var pos = _current;
-            for (var i = 0; i < numToRemove; i++)
+            for (var i = 0; i < _pickupCount; i++)
             {
                 pos = _next[pos];
-                removed[i] = pos;
+                _removed[i] = pos;
             }
 
             _next[_current] = _next[pos];
-            // note we're not actually removing anything, just updating
-            // pointers to skip
-
-            return removed;
         }
 
         /// <summary>
-        /// Add some values to the given position. It's assumed that
-        /// these values are already linked together among themselve
+        /// Replace the removed cups by updating pointers.
         /// </summary>
-        /// <param name="pos">The position to add after</param>
-        /// <param name="listVals">The values to add</param>
-        private void AddListAfter(int pos, int[] listVals)
+        /// <param name="cup">The cup to start placing after</param>
+        private void ReplaceCups(int cup)
         {
-            var next = _next[pos];
-            _next[pos] = listVals[0];
-            _next[listVals[^1]] = next;
+            var next = _next[cup];
+            _next[cup] = _removed[0];
+            _next[_removed[_pickupCount - 1]] = next;
         }
     }
 }

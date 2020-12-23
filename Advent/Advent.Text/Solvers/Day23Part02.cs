@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Advent.Text.Games;
 
 namespace Advent.Text.Solvers
@@ -12,17 +11,11 @@ namespace Advent.Text.Solvers
             var contents = ReadInputFile();
 
             var nums = contents.Trim().Select(digit => (int)char.GetNumericValue(digit)).ToList();
-            var maxNum = nums.Max();
 
-            var allNums = nums.Union(Enumerable.Range(maxNum + 1, 1000000 - maxNum));
-
-            var cups = new Cups(allNums);
-
+            var cups = new Cups(nums, 3, 1000000);
             cups.Play(10000000);
 
-            var starCups = cups.GetCups(1).Take(3).ToList();
-
-            var result = (long)starCups[1] * starCups[2];
+            var result = cups.GetCups(1).Take(3).Aggregate(1L, (product, next) => product * next);
 
             return result;
         }
