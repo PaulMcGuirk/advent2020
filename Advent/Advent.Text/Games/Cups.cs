@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Advent.Text.Games
 {
@@ -8,9 +9,9 @@ namespace Advent.Text.Games
     /// </summary>
     public class Cups
     {
-        private LinkedList<int> _cups;
-        private LinkedListNode<int> _current;
-        private Dictionary<int, LinkedListNode<int>> _cupLookup; // maintain this for O(1) lookup
+        private readonly Dictionary<int, int> _next; // the value is the cup that comes after the key
+        private int _current;
+        
         private readonly int _maxValue;
 
         /// <summary>
@@ -19,19 +20,24 @@ namespace Advent.Text.Games
         /// <param name="nums"></param>
         public Cups(IEnumerable<int> nums)
         {
-            _cups = new LinkedList<int>();
-            _cupLookup = new Dictionary<int, LinkedListNode<int>>();
-            _maxValue = 0;
+            _next = new Dictionary<int, int>();
 
-            foreach (var num in nums)
+            var first = nums.First();
+            _current = first;
+            _maxValue = first;
+
+            foreach (var num in nums.Skip(1))
             {
-                _cupLookup[num] = _cups.AddLast(num);
+                _next[_current] = num;
+                _current = num;
                 if (num > _maxValue)
                 {
                     _maxValue = num;
                 }
             }
-            _current = _cups.First;
+
+            _next[_current] = first;
+            _current = first;
         }
 
         /// <summary>
@@ -51,32 +57,26 @@ namespace Advent.Text.Games
         /// </summary>
         public void PlayRound()
         {
-            var removed = new List<int>();
-            for (var i = 0; i < 3; i++)
-            {
-                var toRemove = _current.GetNextCircular();
-                removed.Add(toRemove.Value);
-                _cups.Remove(toRemove);
-            }
+            var removed = RemoveNext(3);
 
-            var destinationValue = _current.Value - 1;
-            while (destinationValue <= 0 || removed.Contains(destinationValue))
+            var destination = _current - 1;
+            while (destination <= 0 || removed.Contains(destination))
             {
-                destinationValue--;
-                if (destinationValue <= 0)
+                destination--;
+                if (destination <= 0)
                 {
-                    destinationValue = _maxValue;
+                    destination = _maxValue;
                 }
             }
 
-            var destination = _cupLookup[destinationValue];
-            for (var i = 0; i < 3; i++)
-            {
-                var val = removed[2 - i];
-                _cupLookup[val] = _cups.AddAfter(destination, val);
-            }
+            AddListAfter(destination, removed);
 
-            _current = _current.GetNextCircular();
+            //for (var i = 0; i < 3; i++)
+            //{
+            //    AddAfter(destination, removed[2 - i]);
+            //}
+
+            _current = _next[_current];
         }
 
         /// <summary>
@@ -86,30 +86,47 @@ namespace Advent.Text.Games
         /// <returns>All of the cups</returns>
         public IEnumerable<int> GetCups(int startingCup)
         {
-            var cup = _cupLookup.GetValueOrDefault(startingCup);
-            if (cup == null)
-            {
-                yield break;
-            }
             yield return startingCup;
-            
-
-            for (cup = cup.GetNextCircular(); cup.Value != startingCup; cup = cup.GetNextCircular())
+            for (var val = _next[startingCup]; val != startingCup; val = _next[val])
             {
-                yield return cup.Value;
+                yield return val;
             }
         }
-    }
 
-    public static class Extensions
-    {
         /// <summary>
-        /// Get the next node in a linked list. If the given node is the last node,
-        /// this returns the first node.
+        /// Remove a number of nodes from the list
         /// </summary>
-        /// <param name="list">The node to start with</param>
-        /// <returns>The next node</returns>
-        public static LinkedListNode<int> GetNextCircular(this LinkedListNode<int> list)
-            => list.Next ?? list.List.First;
+        /// <param name="numToRemove">The numbers to remove</param>
+        /// <returns>The nodes removed</returns>
+        private int[] RemoveNext(int numToRemove)
+        {
+            var removed = new int[numToRemove];
+
+            var pos = _current;
+            for (var i = 0; i < numToRemove; i++)
+            {
+                pos = _next[pos];
+                removed[i] = pos;
+            }
+
+            _next[_current] = _next[pos];
+            // note we're not actually removing anything, just updating
+            // pointers to skip
+
+            return removed;
+        }
+
+        /// <summary>
+        /// Add some values to the given position. It's assumed that
+        /// these values are already linked together among themselve
+        /// </summary>
+        /// <param name="pos">The position to add after</param>
+        /// <param name="listVals">The values to add</param>
+        private void AddListAfter(int pos, int[] listVals)
+        {
+            var next = _next[pos];
+            _next[pos] = listVals[0];
+            _next[listVals[^1]] = next;
+        }
     }
 }
