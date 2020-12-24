@@ -44,3 +44,6 @@
 22.2 29177 input22.txt
 23.1 75893264 input23.txt
 23.2 38162588308 input23.txt
+24.1 495 input24.txt
+24.2 4012 input24.txt
+
