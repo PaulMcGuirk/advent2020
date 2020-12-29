@@ -14,7 +14,8 @@ fn count_paths(adapters: &Vec<i32>) -> u64 {
     path_counts.insert(0, 1);
 
     for adapter in adapters {
-        let path_count: u64 = (1..4).map(|diff| *path_counts.get(&(adapter - diff)).unwrap_or(&0)).sum();
+        let path_count: u64 = (1..4)
+            .map(|diff| path_counts.get(&(adapter - diff)).cloned().unwrap_or(0)).sum();
         path_counts.insert(adapter, path_count);
     }
 
